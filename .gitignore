@@ -1,0 +1,38 @@
+# Secretos y credenciales
+.env
+.env.*
+!.env.example
+*.pem
+*.jks
+*.keystore
+key.properties
+google-services.json
+GoogleService-Info.plist
+
+# Flutter y Android
+apps/mobile/.dart_tool/
+apps/mobile/build/
+apps/mobile/.packages
+apps/mobile/.flutter-plugins
+apps/mobile/.flutter-plugins-dependencies
+apps/mobile/local.properties
+apps/mobile/*.iml
+apps/mobile/.idea/
+
+# Node.js & Next.js
+node_modules/
+apps/admin/node_modules/
+apps/admin/.next/
+apps/admin/out/
+apps/admin/dist/
+*.tsbuildinfo
+
+# Documentación y notas internas temporales
+prompt.md
+docs/
+DECISIONS.md
+IMPLEMENTATION_STATUS.md
+
+# Sistema
+.DS_Store
+Thumbs.db

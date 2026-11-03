@@ -1,0 +1,12 @@
+{
+  "schema": 1, "id": "compact", "name": "Compacto", "mode": "alpha", "languages": ["en", "es"], "sharedSymbols": true,
+  "pages": {
+    "main": [
+      ["q","w","e","r","t","y","u","i","o","p"],
+      ["a","s","d","f","g","h","j","k","l"],
+      [{"k":"@shift","w":1.3},"z","x","c","v","b","n","m",{"k":"@back","w":1.3}],
+      [{"k":"@page:symbols","l":"123","w":1.3},"@next",{"k":"@space","l":"","w":5},{"k":".","w":1},{"k":"@enter","w":1.3}]
+    ]
+  }
+}
+
