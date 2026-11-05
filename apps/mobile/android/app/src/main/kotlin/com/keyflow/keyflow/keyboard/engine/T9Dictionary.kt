@@ -7,7 +7,7 @@ import java.text.Normalizer
  * Fully offline. Accented letters map to the key of their base letter (á→2, é→3 …) and ñ shares key 6
  * with m/n/o, so Spanish words are typed with the same 2-9 digit keys.
  */
-class T9Dictionary(words: List<String>, val language: String = "en") {
+class T9Dictionary(words: List<String>, val language: String = "en", val personal: PersonalDictionary? = null) {
     private val map = HashMap<String, MutableList<String>>()
 
     init {
@@ -20,19 +20,32 @@ class T9Dictionary(words: List<String>, val language: String = "en") {
         }
     }
 
-    fun lookup(digits: String): List<String> = map[digits] ?: emptyList()
+    /** Personal words first (most used on top), then the bundled list ordered by frequency. */
+    fun lookup(digits: String): List<String> {
+        val base = map[digits] ?: emptyList()
+        val mine = personal?.matching(digits)
+        if (mine.isNullOrEmpty()) return base
+        return (mine + base).distinct()
+    }
+
+    /** Teach a new word (typed letter by letter). */
+    fun learn(word: String) { personal?.add(word, 2) }
+
+    /** Count a chosen dictionary word so it ranks higher next time. */
+    fun recordUse(word: String) { personal?.add(word, 1) }
 
     /** Words that start with the given digits, used as a prefix completion when no exact word exists. */
     fun lookupPrefix(digits: String, limit: Int = 3): List<String> {
         if (digits.isEmpty()) return emptyList()
         val out = ArrayList<String>()
+        personal?.matchingPrefix(digits, limit)?.let { out.addAll(it) }
         for ((k, v) in map) {
             if (k.length > digits.length && k.startsWith(digits)) {
                 out.add(v.first())
                 if (out.size >= limit * 8) break
             }
         }
-        return out.sortedBy { it.length }.take(limit)
+        return out.distinct().sortedBy { it.length }.take(limit)
     }
 
     companion object {

@@ -1,6 +1,7 @@
 package com.keyflow.keyflow.keyboard.layouts
 
 import android.content.Context
+import com.keyflow.keyflow.keyboard.engine.PersonalDictionary
 import com.keyflow.keyflow.keyboard.engine.KeyPage
 import com.keyflow.keyflow.keyboard.engine.KeyboardLayout
 import com.keyflow.keyflow.keyboard.engine.LayoutParser
@@ -41,7 +42,8 @@ class LayoutRepository(private val context: Context) {
         val words = try {
             context.assets.open("keyflow/words_$lang.txt").bufferedReader().readLines()
         } catch (e: Exception) { emptyList() }
-        return T9Dictionary(words, lang).also { dicts[lang] = it }
+        val personal = PersonalDictionary(java.io.File(context.filesDir, "keyblue_user_words_$lang.txt"))
+        return T9Dictionary(words, lang, personal).also { dicts[lang] = it }
     }
 
     companion object { val SUPPORTED_LANGUAGES = listOf("en", "es") }

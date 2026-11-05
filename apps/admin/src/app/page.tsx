@@ -76,6 +76,55 @@ const GITHUB_REPO_URL = 'https://github.com/thxmasdev/KeyBlue';
 const GITHUB_LATEST_RELEASE_URL = 'https://github.com/thxmasdev/KeyBlue/releases/latest';
 const CURRENT_APP_VERSION = 'v0.1.0';
 
+// Simulación de diccionario T9 interactivo para la landing web
+const T9_LETTERS: Record<string, string> = {
+  '2': 'abc', '3': 'def', '4': 'ghi', '5': 'jkl', '6': 'mnño', '7': 'pqrs', '8': 'tuv', '9': 'wxyz',
+};
+const T9_DIGIT_MAP: Record<string, string> = {};
+Object.entries(T9_LETTERS).forEach(([d, ls]) => {
+  ls.split('').forEach((char) => { T9_DIGIT_MAP[char] = d; });
+});
+const T9_ACCENT_NORM: Record<string, string> = {
+  á: 'a', é: 'e', í: 'i', ó: 'o', ú: 'u', ü: 'u',
+};
+
+const T9_DICTIONARY = [
+  'hola', 'esta', 'está', 'que', 'qué', 'como', 'cómo', 'para', 'con', 'una', 'los', 'las', 'por', 'pero', 'muy',
+  'bien', 'gracias', 'buenos', 'dias', 'días', 'tardes', 'noches', 'amigo', 'casa', 'mañana', 'hoy', 'ayer',
+  'teclado', 'rápido', 'rapido', 'nuevo', 'nada', 'todo', 'vamos', 'quiero', 'tiempo', 'mundo', 'amor', 'vida',
+  'good', 'home', 'gone', 'hood', 'hello', 'the', 'and', 'you', 'are', 'how', 'thanks', 'keyboard', 'fast',
+];
+
+function getT9Digits(word: string): string {
+  return word
+    .toLowerCase()
+    .split('')
+    .map((c) => T9_DIGIT_MAP[T9_ACCENT_NORM[c] ?? c] ?? '')
+    .join('');
+}
+
+const T9_INDEX: Record<string, string[]> = {};
+T9_DICTIONARY.forEach((w) => {
+  const d = getT9Digits(w);
+  if (!T9_INDEX[d]) T9_INDEX[d] = [];
+  if (!T9_INDEX[d].includes(w)) T9_INDEX[d].push(w);
+});
+
+function t9Candidates(seq: string): string[] {
+  if (!seq) return [];
+  const exact = T9_INDEX[seq] ?? [];
+  if (exact.length > 0) return exact;
+  const prefix = Object.keys(T9_INDEX)
+    .filter((k) => k.startsWith(seq))
+    .flatMap((k) => T9_INDEX[k])
+    .slice(0, 4);
+  const fallback = seq
+    .split('')
+    .map((d) => T9_LETTERS[d]?.[0] ?? d)
+    .join('');
+  return prefix.length > 0 ? prefix : [fallback];
+}
+
 export default function LandingPage() {
   const [activeTheme, setActiveTheme] = useState(themesPreview[0]);
   const [activeMode, setActiveMode] = useState<'qwerty' | 't9'>('qwerty');

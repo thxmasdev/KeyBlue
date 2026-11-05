@@ -157,5 +157,57 @@ class KeyboardEngineTest {
         assertEquals(e.candidates.size, 0)
         assertTrue(s.shown().endsWith(" "))
     }
+
+    @Test fun keyOneCyclesPunctuation() {
+        val s = FakeSink(); val l = layout("t9"); val e = KeyboardEngine(l, s, dict)
+        e.onKey(key(l, "1"))
+        assertEquals(".", s.shown())
+        e.onKey(key(l, "1"))
+        assertEquals(",", s.shown())
+        e.onKey(key(l, "@space"))
+        assertEquals(", ", s.shown())
+    }
+
+    @Test fun longPressOnDigitOutputsNumber() {
+        val s = FakeSink(); val l = layout("t9"); val e = KeyboardEngine(l, s, dict)
+        e.onPopupChar("5")
+        assertEquals("5", s.shown())
+    }
+
+    @Test fun multiTapAllowsLetterByLetterAndLearnsWord() {
+        val personal = PersonalDictionary(null)
+        val testDict = T9Dictionary(listOf("hola"), "es", personal)
+        val s = FakeSink(); val l = layout("t9"); val e = KeyboardEngine(l, s, testDict)
+        e.toggleMultiTap()
+        assertTrue(e.multiTap)
+        // Escribir "sol": 7(pqrS) 4 veces = s; 6(mnñO) 4 veces = o; 5(jkL) 3 veces = l
+        val now = 1000L
+        e.onKey(key(l, "7"), now)
+        e.onKey(key(l, "7"), now + 100)
+        e.onKey(key(l, "7"), now + 200)
+        e.onKey(key(l, "7"), now + 300) // s
+        e.onKey(key(l, "6"), now + 1500)
+        e.onKey(key(l, "6"), now + 1600)
+        e.onKey(key(l, "6"), now + 1700)
+        e.onKey(key(l, "6"), now + 1800) // o
+        e.onKey(key(l, "5"), now + 3000)
+        e.onKey(key(l, "5"), now + 3100)
+        e.onKey(key(l, "5"), now + 3200) // l
+        e.onKey(key(l, "@space"), now + 4000)
+        assertEquals("sol ", s.shown())
+        // Verifica que la palabra fue aprendida en el diccionario personal
+        assertTrue(personal.contains("sol"))
+    }
+
+    @Test fun languageKeyNotifiesListener() {
+        var requested = 0
+        val l = layout("t9")
+        val e = KeyboardEngine(l, FakeSink(), dict, object : EngineListener {
+            override fun onStateChanged() {}
+            override fun onRequestNextLayout() {}
+            override fun onRequestNextLanguage() { requested++ }
+        })
+        e.onKey(key(l, "@lang")); assertEquals(1, requested)
+    }
 }
 

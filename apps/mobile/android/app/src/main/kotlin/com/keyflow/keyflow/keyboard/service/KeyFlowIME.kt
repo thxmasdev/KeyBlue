@@ -129,6 +129,16 @@ class KeyFlowIME : InputMethodService(), EngineListener {
     // ---- EngineListener ----
     override fun onStateChanged() { view?.invalidate() }
 
+    override fun onRequestNextLanguage() {
+        val langs = LayoutRepository.SUPPORTED_LANGUAGES
+        val cur = engine?.language ?: "es"
+        val next = langs[(langs.indexOf(cur) + 1) % langs.size]
+        store.saveLanguage(next)
+        engine?.setDictionary(repo.dictionary(next))
+        config = store.load()
+        view?.refresh()
+    }
+
     override fun onRequestNextLayout() {
         val cfg = config ?: return
         val cycle = cfg.cycle.filter { repo.all().containsKey(it) }

@@ -10,6 +10,7 @@ enum class KeyAction {
     PAGE,        // switches to page named [Key.arg]
     NEXT_LAYOUT, // cycles to next layout (language / distribution switch)
     T9_NEXT,     // cycles T9 candidates
+    LANGUAGE,    // switches the typing language (es / en)
     NONE
 }
 

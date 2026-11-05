@@ -123,6 +123,7 @@ class KeyboardView(context: Context) : View(context) {
         val k = c.key
         var label = k.label
         if (k.action == KeyAction.SHIFT) label = if (e.shift == ShiftState.LOCK) "⇪" else "⇧"
+        else if (k.action == KeyAction.LANGUAGE) label = "🌐 " + e.language.uppercase()
         else if (k.action == KeyAction.CHAR && !e.layout.isT9 && e.shift != ShiftState.OFF) label = label.uppercase()
         if (k.action == KeyAction.SPACE && k.label.isBlank()) label = ""
         textPaint.color = fg
@@ -141,21 +142,42 @@ class KeyboardView(context: Context) : View(context) {
         }
     }
 
+    private val modeChipW get() = 64 * dp
+
     private fun drawCandidates(canvas: Canvas, e: KeyboardEngine) {
         candidateRects.clear()
         val bar = candidateBarPx
         textPaint.typeface = Typeface.DEFAULT
         textPaint.textSize = 16 * sp
+        val listW = width - modeChipW
         val list = e.candidates.take(5)
-        if (list.isEmpty()) return
-        val w = width.toFloat() / list.size
-        list.forEachIndexed { i, word ->
-            val r = RectF(i * w, 0f, (i + 1) * w, bar)
-            candidateRects.add(r)
-            textPaint.color = if (i == e.candidateIndex) theme.accent else theme.keyText
-            textPaint.isFakeBoldText = i == e.candidateIndex
-            canvas.drawText(word, r.centerX(), r.centerY() - (textPaint.ascent() + textPaint.descent()) / 2, textPaint)
+        if (list.isNotEmpty()) {
+            val w = listW / list.size
+            list.forEachIndexed { i, word ->
+                val r = RectF(i * w, 0f, (i + 1) * w, bar)
+                candidateRects.add(r)
+                textPaint.color = if (i == e.candidateIndex) theme.accent else theme.keyText
+                textPaint.isFakeBoldText = i == e.candidateIndex
+                canvas.drawText(word, r.centerX(), r.centerY() - (textPaint.ascent() + textPaint.descent()) / 2, textPaint)
+            }
+        } else {
+            textPaint.color = theme.keyText
+            textPaint.alpha = 110
+            textPaint.textSize = 13 * sp
+            val hint = if (e.multiTap) "Modo letras: toca varias veces cada tecla" else "Escribe con las teclas 2-9"
+            canvas.drawText(hint, listW / 2, bar / 2 - (textPaint.ascent() + textPaint.descent()) / 2, textPaint)
+            textPaint.alpha = 255
         }
+        textPaint.isFakeBoldText = false
+        // Mode chip: T9 (predictive) / ABC (letter by letter)
+        val chip = RectF(width - modeChipW + 6 * dp, 6 * dp, width - 6 * dp, bar - 6 * dp)
+        paint.style = Paint.Style.FILL
+        paint.color = if (e.multiTap) theme.accent else theme.special
+        canvas.drawRoundRect(chip, 10 * dp, 10 * dp, paint)
+        textPaint.color = if (e.multiTap) theme.accentText else theme.specialText
+        textPaint.textSize = 13 * sp
+        textPaint.isFakeBoldText = true
+        canvas.drawText(if (e.multiTap) "ABC" else "T9", chip.centerX(), chip.centerY() - (textPaint.ascent() + textPaint.descent()) / 2, textPaint)
         textPaint.isFakeBoldText = false
     }
 
@@ -230,6 +252,7 @@ class KeyboardView(context: Context) : View(context) {
     }
 
     private fun handleCandidateTap(x: Float, e: KeyboardEngine) {
+        if (x >= width - modeChipW) { e.toggleMultiTap(); tick(); return }
         val idx = candidateRects.indexOfFirst { x >= it.left && x <= it.right }
         if (idx >= 0) { e.pickCandidate(idx); tick() }
     }

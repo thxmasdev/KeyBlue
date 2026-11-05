@@ -35,7 +35,7 @@ class KeyDef {
     } else {
       action = name;
       label = const {
-        'shift': '⇧', 'back': '⌫', 'enter': '⏎', 'space': ' ', 'next': '🌐', 't9next': '↻',
+        'shift': '⇧', 'back': '⌫', 'enter': '⏎', 'space': ' ', 'next': '🌐', 't9next': '↻', 'lang': '🌐',
       }[name] ?? name;
     }
     return KeyDef(
@@ -142,8 +142,8 @@ String t9Letters(String digit, String language) {
 /// Configuration shared with the native keyboard (JSON, schema 1).
 class KeyboardConfig {
   const KeyboardConfig({
-    this.layoutId = 'qwerty',
-    this.cycle = const ['qwerty', 't9', 'numeric'],
+    this.layoutId = 't9',
+    this.cycle = const ['t9', 'numeric'],
     this.theme = const KeyTheme(),
     this.haptics = true,
     this.language = 'es',
@@ -165,8 +165,8 @@ class KeyboardConfig {
       };
 
   factory KeyboardConfig.fromJson(Map<String, dynamic> j) => KeyboardConfig(
-        layoutId: (j['layoutId'] as String?) ?? 'qwerty',
-        cycle: ((j['layouts'] as List?) ?? const ['qwerty']).cast<String>(),
+        layoutId: (j['layoutId'] as String?) ?? 't9',
+        cycle: ((j['layouts'] as List?) ?? const ['t9']).cast<String>(),
         theme: KeyTheme.fromJson(j['theme'] as Map<String, dynamic>?),
         haptics: (j['haptics'] as bool?) ?? true,
         language: supportedLanguages.containsKey(j['language']) ? j['language'] as String : 'es',

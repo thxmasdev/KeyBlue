@@ -70,6 +70,7 @@ object LayoutParser {
             name == "enter" -> Triple(KeyAction.ENTER, "⏎", null)
             name == "space" -> Triple(KeyAction.SPACE, " ", null)
             name == "next" -> Triple(KeyAction.NEXT_LAYOUT, "🌐", null)
+            name == "lang" -> Triple(KeyAction.LANGUAGE, "🌐", null)
             name == "t9next" -> Triple(KeyAction.T9_NEXT, "↻", null)
             name.startsWith("page:") -> Triple(KeyAction.PAGE, name.substring(5), name.substring(5))
             else -> throw InvalidLayoutException("Unknown action $k")

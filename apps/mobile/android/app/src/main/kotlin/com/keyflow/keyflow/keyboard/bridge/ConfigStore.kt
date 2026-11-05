@@ -25,14 +25,20 @@ class ConfigStore(context: Context) {
 
     fun rawOrNull(): String? = prefs.getString(KEY, null)
 
+    /** Persists the language chosen with the keyboard's language key. */
+    fun saveLanguage(lang: String) {
+        val o = try { JSONObject(prefs.getString(KEY, null) ?: DEFAULT) } catch (e: Exception) { JSONObject(DEFAULT) }
+        prefs.edit().putString(KEY, o.put("language", lang).toString()).apply()
+    }
+
     fun load(): Config {
         val raw = prefs.getString(KEY, null) ?: DEFAULT
         val o = try { JSONObject(raw) } catch (e: Exception) { JSONObject(DEFAULT) }
         val cycleArr = o.optJSONArray("layouts")
-        val cycle = if (cycleArr != null) (0 until cycleArr.length()).map { cycleArr.getString(it) } else listOf("qwerty")
+        val cycle = if (cycleArr != null) (0 until cycleArr.length()).map { cycleArr.getString(it) } else listOf("t9")
         return Config(
-            layoutId = o.optString("layoutId", "qwerty"),
-            cycle = cycle.ifEmpty { listOf("qwerty") },
+            layoutId = o.optString("layoutId", "t9"),
+            cycle = cycle.ifEmpty { listOf("t9") },
             theme = KeyboardTheme.parse(o.optJSONObject("theme")),
             haptics = o.optBoolean("haptics", true),
             language = o.optString("language", "es"),
@@ -42,7 +48,7 @@ class ConfigStore(context: Context) {
 
     companion object {
         private const val KEY = "config_json"
-        const val DEFAULT = """{"schema":1,"layoutId":"qwerty","layouts":["qwerty","t9","numeric"],"haptics":true}"""
+        const val DEFAULT = """{"schema":1,"layoutId":"t9","layouts":["t9","numeric"],"language":"es","haptics":true}"""
     }
 }
 
