@@ -3,6 +3,7 @@ import 'package:keyflow/domain/keyboard_models.dart';
 import 'package:keyflow/domain/keyboard_profile.dart';
 import 'package:keyflow/domain/license_service.dart';
 import 'package:keyflow/domain/theme_presets.dart';
+import 'package:keyflow/services/update_service.dart';
 
 void main() {
   group('ThemePresets tests', () {
@@ -71,6 +72,23 @@ void main() {
       expect(regex.hasMatch('INVALID-KEY'), isFalse);
       expect(regex.hasMatch('KEYF-123-456-789'), isFalse);
       expect(regex.hasMatch('keyf-abcd-ef01-2345'), isFalse); // lower case
+    });
+  });
+
+  group('UpdateService tests', () {
+    test('semantic version comparison logic', () {
+      expect(UpdateService.isVersionGreater('0.1.1', '0.1.0'), isTrue);
+      expect(UpdateService.isVersionGreater('1.0.0', '0.1.0'), isTrue);
+      expect(UpdateService.isVersionGreater('0.1.0', '0.1.0'), isFalse);
+      expect(UpdateService.isVersionGreater('0.0.9', '0.1.0'), isFalse);
+    });
+
+    test('fetches live release from GitHub and detects available update', () async {
+      final update = await UpdateService.checkUpdate();
+      expect(update, isNotNull);
+      expect(update!.latestVersion, equals('0.1.1'));
+      expect(update.hasUpdate, isTrue);
+      expect(update.downloadUrl, contains('KeyBlue-v0.1.1.apk'));
     });
   });
 }
