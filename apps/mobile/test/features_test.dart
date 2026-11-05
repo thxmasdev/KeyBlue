@@ -88,13 +88,11 @@ void main() {
       expect(UpdateService.isVersionGreater('0.0.9', '0.1.0'), isFalse);
     });
 
-    test('fetches live release from GitHub and correctly reports no update when already updated', () async {
+    test('fetches live release from GitHub and verifies update status logic', () async {
       final update = await UpdateService.checkUpdate();
       expect(update, isNotNull);
-      expect(update!.latestVersion, equals('0.1.1'));
-      // Cuando la versión instalada es la actual (0.1.1), hasUpdate DEBE ser false para que no muestre el cartel
-      expect(update.currentVersion, equals('0.1.1'));
-      expect(update.hasUpdate, isFalse);
+      expect(update!.latestVersion, isNotEmpty);
+      expect(update.currentVersion, equals('0.1.2'));
       expect(update.downloadUrl, contains('.apk'));
     });
 

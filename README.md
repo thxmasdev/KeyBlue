@@ -6,7 +6,7 @@
 
 [![Android](https://img.shields.io/badge/Plataforma-Android%2010%2B-3DDC84?style=flat-square&logo=android&logoColor=white)](https://github.com/thxmasdev/KeyBlue)
 [![Licencia](https://img.shields.io/badge/Licencia-Privada%20%2F%20PRO-5B6CFF?style=flat-square)](https://github.com/thxmasdev/KeyBlue)
-[![Versión](https://img.shields.io/badge/Versión-v0.1.1-cyan?style=flat-square)](https://github.com/thxmasdev/KeyBlue/releases)
+[![Versión](https://img.shields.io/badge/Versión-v0.1.2-cyan?style=flat-square)](https://github.com/thxmasdev/KeyBlue/releases)
 
 </div>
 
