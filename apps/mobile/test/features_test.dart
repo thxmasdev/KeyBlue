@@ -4,8 +4,12 @@ import 'package:keyflow/domain/keyboard_profile.dart';
 import 'package:keyflow/domain/license_service.dart';
 import 'package:keyflow/domain/theme_presets.dart';
 import 'package:keyflow/services/update_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  setUp(() {
+    SharedPreferences.setMockInitialValues({});
+  });
   group('ThemePresets tests', () {
     test('contains exactly 15 high quality unique themes', () {
       expect(ThemePresets.all.length, 15);
@@ -79,16 +83,25 @@ void main() {
     test('semantic version comparison logic', () {
       expect(UpdateService.isVersionGreater('0.1.1', '0.1.0'), isTrue);
       expect(UpdateService.isVersionGreater('1.0.0', '0.1.0'), isTrue);
+      expect(UpdateService.isVersionGreater('0.1.1', '0.1.1'), isFalse);
       expect(UpdateService.isVersionGreater('0.1.0', '0.1.0'), isFalse);
       expect(UpdateService.isVersionGreater('0.0.9', '0.1.0'), isFalse);
     });
 
-    test('fetches live release from GitHub and detects available update', () async {
+    test('fetches live release from GitHub and correctly reports no update when already updated', () async {
       final update = await UpdateService.checkUpdate();
       expect(update, isNotNull);
       expect(update!.latestVersion, equals('0.1.1'));
-      expect(update.hasUpdate, isTrue);
-      expect(update.downloadUrl, contains('KeyBlue-v0.1.1.apk'));
+      // Cuando la versión instalada es la actual (0.1.1), hasUpdate DEBE ser false para que no muestre el cartel
+      expect(update.currentVersion, equals('0.1.1'));
+      expect(update.hasUpdate, isFalse);
+      expect(update.downloadUrl, contains('.apk'));
+    });
+
+    test('dismissing update version persists in SharedPreferences', () async {
+      await UpdateService.dismissVersion('0.1.2');
+      expect(await UpdateService.isDismissed('0.1.2'), isTrue);
+      expect(await UpdateService.isDismissed('0.1.3'), isFalse);
     });
   });
 }

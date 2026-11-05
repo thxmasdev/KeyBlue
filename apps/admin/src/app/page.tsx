@@ -74,7 +74,7 @@ const themesPreview = [
 
 const GITHUB_REPO_URL = 'https://github.com/thxmasdev/KeyBlue';
 const GITHUB_LATEST_RELEASE_URL = 'https://github.com/thxmasdev/KeyBlue/releases/latest';
-const CURRENT_APP_VERSION = 'v0.1.0';
+const CURRENT_APP_VERSION = 'v0.1.1';
 
 // Simulación de diccionario T9 interactivo para la landing web
 const T9_LETTERS: Record<string, string> = {

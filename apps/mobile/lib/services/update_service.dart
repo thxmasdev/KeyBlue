@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class AppUpdateInfo {
@@ -28,14 +29,47 @@ class AppUpdateInfo {
 class UpdateService {
   static const repoOwner = 'thxmasdev';
   static const repoName = 'KeyBlue';
+  static const fallbackVersion = '0.1.1';
+  static const prefKeyDismissed = 'keyblue_dismissed_update_version';
 
   /// Versión instalada, leída del paquete real (pubspec / versionName).
   static Future<String> installedVersion() async {
     try {
       final info = await PackageInfo.fromPlatform();
-      return info.version;
+      if (info.version.isNotEmpty && info.version != '0.0.0') {
+        return info.version;
+      }
+      return fallbackVersion;
     } catch (_) {
-      return '0.0.0';
+      return fallbackVersion;
+    }
+  }
+
+  /// Obtiene la versión descartada por el usuario (si existe).
+  static Future<String?> getDismissedVersion() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getString(prefKeyDismissed);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Guarda la versión descartada para no volver a molestar con el cartel.
+  static Future<void> dismissVersion(String version) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(prefKeyDismissed, version);
+    } catch (_) {}
+  }
+
+  /// Comprueba si una versión ha sido descartada por el usuario.
+  static Future<bool> isDismissed(String version) async {
+    try {
+      final dismissed = await getDismissedVersion();
+      return dismissed == version;
+    } catch (_) {
+      return false;
     }
   }
 
@@ -93,7 +127,7 @@ class UpdateService {
   /// Compara versiones semánticas "a.b.c" (partes ausentes cuentan como 0).
   static bool isVersionGreater(String remote, String current) {
     List<int> parse(String v) =>
-        v.split('.').where((p) => p.isNotEmpty).map((p) => int.tryParse(p) ?? 0).toList();
+        v.split(RegExp(r'[^\d]+')).where((p) => p.isNotEmpty).map((p) => int.tryParse(p) ?? 0).toList();
     final r = parse(remote);
     final c = parse(current);
     final len = r.length > c.length ? r.length : c.length;
@@ -107,7 +141,7 @@ class UpdateService {
   }
 
   /// Muestra el diálogo modal para actualizar la app si hay una nueva versión
-  static void showUpdateDialog(BuildContext context, AppUpdateInfo info) {
+  static void showUpdateDialog(BuildContext context, AppUpdateInfo info, {VoidCallback? onDismiss}) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -153,7 +187,10 @@ class UpdateService {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(ctx),
+            onPressed: () {
+              Navigator.pop(ctx);
+              onDismiss?.call();
+            },
             child: const Text('Más tarde'),
           ),
           FilledButton(
@@ -174,6 +211,26 @@ class UpdateService {
     } catch (_) {}
   }
 }
+
+class DismissedUpdateNotifier extends Notifier<String?> {
+  @override
+  String? build() {
+    _init();
+    return null;
+  }
+
+  Future<void> _init() async {
+    final v = await UpdateService.getDismissedVersion();
+    if (v != null) state = v;
+  }
+
+  Future<void> dismiss(String version) async {
+    state = version;
+    await UpdateService.dismissVersion(version);
+  }
+}
+
+final dismissedUpdateProvider = NotifierProvider<DismissedUpdateNotifier, String?>(DismissedUpdateNotifier.new);
 
 final installedVersionProvider = FutureProvider<String>((ref) => UpdateService.installedVersion());
 

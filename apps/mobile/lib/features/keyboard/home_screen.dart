@@ -20,6 +20,11 @@ class HomeScreen extends ConsumerWidget {
     final current = layouts.where((l) => l.id == config.layoutId).firstOrNull;
     final isPro = ref.watch(licenseProvider).active;
     final updateAsync = ref.watch(updateCheckProvider);
+    final dismissedVersion = ref.watch(dismissedUpdateProvider);
+    final updateInfo = updateAsync.value;
+    final bool showUpdateCard = updateInfo != null &&
+        updateInfo.hasUpdate &&
+        dismissedVersion != updateInfo.latestVersion;
 
     return Scaffold(
       appBar: AppBar(
@@ -65,20 +70,49 @@ class HomeScreen extends ConsumerWidget {
             const SizedBox(height: 16),
           ],
 
-          if (updateAsync.value?.hasUpdate == true) ...[
+          if (showUpdateCard) ...[
             Card(
               color: cs.primaryContainer.withValues(alpha: .35),
-              child: ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                leading: const Icon(Icons.system_update_rounded, color: Color(0xFF5B6CFF), size: 28),
-                title: Text(
-                  '¡Actualización v${updateAsync.value!.latestVersion} disponible!',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: Text(updateAsync.value!.releaseName),
-                trailing: FilledButton(
-                  onPressed: () => UpdateService.showUpdateDialog(context, updateAsync.value!),
-                  child: const Text('Actualizar'),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                child: Row(
+                  children: [
+                    const Icon(Icons.system_update_rounded, color: Color(0xFF5B6CFF), size: 28),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '¡Actualización v${updateInfo.latestVersion} disponible!',
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            updateInfo.releaseName,
+                            style: TextStyle(fontSize: 12, color: cs.onSurfaceVariant),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    FilledButton(
+                      onPressed: () => UpdateService.showUpdateDialog(
+                        context,
+                        updateInfo,
+                        onDismiss: () => ref.read(dismissedUpdateProvider.notifier).dismiss(updateInfo.latestVersion),
+                      ),
+                      child: const Text('Actualizar'),
+                    ),
+                    const SizedBox(width: 4),
+                    IconButton(
+                      tooltip: 'Descartar aviso',
+                      icon: const Icon(Icons.close, size: 18),
+                      onPressed: () => ref.read(dismissedUpdateProvider.notifier).dismiss(updateInfo.latestVersion),
+                    ),
+                  ],
                 ),
               ),
             ),
