@@ -40,3 +40,6 @@ Thumbs.db
 # Config local de la app (URL + clave publica de Supabase)
 apps/mobile/env.json
 apps/mobile/android/build/
+
+# Workflows y configuracion CI privada
+.github/
