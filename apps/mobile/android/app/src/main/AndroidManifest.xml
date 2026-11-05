@@ -5,7 +5,8 @@
     <application
         android:label="KeyBlue"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:enableOnBackInvokedCallback="true">
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -33,7 +34,8 @@
             android:name=".keyboard.service.KeyFlowIME"
             android:label="KeyBlue"
             android:permission="android.permission.BIND_INPUT_METHOD"
-            android:exported="true">
+            android:exported="true"
+            android:directBootAware="true">
             <intent-filter>
                 <action android:name="android.view.InputMethod" />
             </intent-filter>

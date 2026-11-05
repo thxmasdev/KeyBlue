@@ -405,7 +405,7 @@ export default function LandingPage() {
                         style={{ backgroundColor: activeTheme.keyBg, color: activeTheme.text }}
                         className="w-12 h-12 rounded-lg text-base"
                       >
-                        🌐
+                        ⌨
                       </button>
                       <button
                         onClick={() => setTypedText((prev) => prev + ' ')}
@@ -444,7 +444,7 @@ export default function LandingPage() {
                       { num: '123', sub: 'Símbolos' },
                       { num: '0', sub: 'Espacio', action: 'space' },
                       { num: '*', sub: 'T9 Next' },
-                      { num: '🌐', sub: 'Idioma' },
+                      { num: '⌨', sub: 'Teclado', action: 'ime' },
                     ].map((k) => (
                       <button
                         key={k.num}

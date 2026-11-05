@@ -16,6 +16,8 @@ interface EngineListener {
     fun onRequestNextLayout()
     /** The user tapped the language key; the host decides which language comes next. */
     fun onRequestNextLanguage() {}
+    /** Switch back to another system keyboard (Samsung/Gboard) or open the IME picker. */
+    fun onRequestSwitchIme(showPicker: Boolean = false) {}
 }
 
 /**
@@ -146,6 +148,7 @@ class KeyboardEngine(
             KeyAction.SHIFT -> onShift(nowMs)
             KeyAction.PAGE -> { finishComposition(); pageName = key.arg ?: "main"; listener?.onStateChanged() }
             KeyAction.NEXT_LAYOUT -> { finishComposition(); listener?.onRequestNextLayout() }
+            KeyAction.SWITCH_IME -> { finishComposition(); listener?.onRequestSwitchIme(false) }
             KeyAction.LANGUAGE -> { finishComposition(); listener?.onRequestNextLanguage() }
             KeyAction.T9_NEXT -> if (digits.isNotEmpty() && candidates.isNotEmpty()) {
                 candidateIndex = (candidateIndex + 1) % candidates.size
@@ -165,6 +168,12 @@ class KeyboardEngine(
         lastWasSentenceEnd = false
         sink.commitText(text)
         afterCommit()
+    }
+
+    /** Triggers the system IME selector dialog (long-press on ⌨ key). */
+    fun requestSwitchImePicker() {
+        finishComposition()
+        listener?.onRequestSwitchIme(showPicker = true)
     }
 
     fun pickCandidate(index: Int) {

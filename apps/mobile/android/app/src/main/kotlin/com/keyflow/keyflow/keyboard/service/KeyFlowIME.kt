@@ -1,11 +1,13 @@
 package com.keyflow.keyflow.keyboard.service
 
 import android.inputmethodservice.InputMethodService
+import android.os.Build
 import android.text.InputType
 import android.view.KeyEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
+import android.view.inputmethod.InputMethodManager
 import com.keyflow.keyflow.keyboard.bridge.ConfigStore
 import com.keyflow.keyflow.keyboard.engine.*
 import com.keyflow.keyflow.keyboard.layouts.LayoutRepository
@@ -137,6 +139,29 @@ class KeyFlowIME : InputMethodService(), EngineListener {
         engine?.setDictionary(repo.dictionary(next))
         config = store.load()
         view?.refresh()
+    }
+
+    override fun onRequestSwitchIme(showPicker: Boolean) {
+        val imm = getSystemService(INPUT_METHOD_SERVICE) as? InputMethodManager ?: return
+        if (showPicker) {
+            imm.showInputMethodPicker()
+            return
+        }
+        val switched = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            try { switchToPreviousInputMethod() } catch (_: Exception) { false }
+        } else false
+
+        if (!switched) {
+            try {
+                if (shouldOfferSwitchingToNextInputMethod()) {
+                    switchToNextInputMethod(false)
+                } else {
+                    imm.showInputMethodPicker()
+                }
+            } catch (_: Exception) {
+                imm.showInputMethodPicker()
+            }
+        }
     }
 
     override fun onRequestNextLayout() {

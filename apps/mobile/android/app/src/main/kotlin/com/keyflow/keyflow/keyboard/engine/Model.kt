@@ -8,7 +8,8 @@ enum class KeyAction {
     ENTER,
     SPACE,
     PAGE,        // switches to page named [Key.arg]
-    NEXT_LAYOUT, // cycles to next layout (language / distribution switch)
+    NEXT_LAYOUT, // cycles to next layout (distribution switch)
+    SWITCH_IME,  // switches back to system keyboard (Samsung/Gboard) or shows IME picker
     T9_NEXT,     // cycles T9 candidates
     LANGUAGE,    // switches the typing language (es / en)
     NONE

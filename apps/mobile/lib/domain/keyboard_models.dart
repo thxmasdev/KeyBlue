@@ -35,7 +35,7 @@ class KeyDef {
     } else {
       action = name;
       label = const {
-        'shift': '⇧', 'back': '⌫', 'enter': '⏎', 'space': ' ', 'next': '🌐', 't9next': '↻', 'lang': '🌐',
+        'shift': '⇧', 'back': '⌫', 'enter': '⏎', 'space': ' ', 'next': '⇄', 't9next': '↻', 'lang': 'ES', 'ime': '⌨', 'switch_ime': '⌨',
       }[name] ?? name;
     }
     return KeyDef(

@@ -2,11 +2,13 @@ package com.keyflow.keyflow.keyboard.views
 
 import android.content.Context
 import android.graphics.*
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.View
+import android.view.WindowInsets
 import com.keyflow.keyflow.keyboard.engine.*
 import com.keyflow.keyflow.keyboard.themes.KeyboardTheme
 import kotlin.math.max
@@ -43,11 +45,20 @@ class KeyboardView(context: Context) : View(context) {
 
     private val candidateBarPx get() = if (engine?.layout?.isT9 == true) 40 * dp else 0f
 
+    private val navInsetsBottom: Float
+        get() {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                val insets = rootWindowInsets?.getInsets(WindowInsets.Type.navigationBars())
+                if (insets != null && insets.bottom > 0) return insets.bottom.toFloat()
+            }
+            return 8 * dp
+        }
+
     override fun onMeasure(w: Int, h: Int) {
         val rows = engine?.page?.rows?.size ?: 4
         val rowH = theme.keyHeightDp * dp
         val gap = theme.gapDp * dp
-        val total = candidateBarPx + rows * (rowH + gap) + gap
+        val total = candidateBarPx + rows * (rowH + gap) + gap + navInsetsBottom
         setMeasuredDimension(MeasureSpec.getSize(w), total.toInt())
     }
 
@@ -123,7 +134,8 @@ class KeyboardView(context: Context) : View(context) {
         val k = c.key
         var label = k.label
         if (k.action == KeyAction.SHIFT) label = if (e.shift == ShiftState.LOCK) "⇪" else "⇧"
-        else if (k.action == KeyAction.LANGUAGE) label = "🌐 " + e.language.uppercase()
+        else if (k.action == KeyAction.LANGUAGE) label = e.language.uppercase()
+        else if (k.action == KeyAction.SWITCH_IME) label = "⌨"
         else if (k.action == KeyAction.CHAR && !e.layout.isT9 && e.shift != ShiftState.OFF) label = label.uppercase()
         if (k.action == KeyAction.SPACE && k.label.isBlank()) label = ""
         textPaint.color = fg
@@ -268,6 +280,16 @@ class KeyboardView(context: Context) : View(context) {
                 repeatRunnable = object : Runnable {
                     override fun run() { e.onKey(c.key); handler.postDelayed(this, 45) }
                 }.also { handler.postDelayed(it, 400) }
+            }
+            KeyAction.SWITCH_IME -> {
+                longRunnable = Runnable {
+                    if (pointers[p.id] === p && p.cell === c) {
+                        p.longFired = true
+                        e.requestSwitchImePicker()
+                        tick()
+                        invalidate()
+                    }
+                }.also { handler.postDelayed(it, 380) }
             }
             else -> if (c.key.popups.isNotEmpty()) {
                 longRunnable = Runnable {

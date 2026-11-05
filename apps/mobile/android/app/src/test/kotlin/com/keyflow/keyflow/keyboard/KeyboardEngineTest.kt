@@ -108,14 +108,15 @@ class KeyboardEngineTest {
         assertEquals("2024", s.shown())
     }
 
-    @Test fun nextLayoutNotifiesListener() {
+    @Test fun switchImeNotifiesListener() {
         var requested = 0
         val l = layout("qwerty")
         val e = KeyboardEngine(l, FakeSink(), null, object : EngineListener {
             override fun onStateChanged() {}
-            override fun onRequestNextLayout() { requested++ }
+            override fun onRequestNextLayout() {}
+            override fun onRequestSwitchIme(showPicker: Boolean) { requested++ }
         })
-        e.onKey(key(l, "@next")); assertEquals(1, requested)
+        e.onKey(key(l, "@ime")); assertEquals(1, requested)
     }
 
     @Test fun spanishT9TypesAccentedWordsAndEnye() {
