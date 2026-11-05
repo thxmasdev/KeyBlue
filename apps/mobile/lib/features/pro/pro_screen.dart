@@ -37,7 +37,7 @@ class _ProScreenState extends ConsumerState<ProScreen> {
     setState(() {
       _isLoading = false;
       if (!success) {
-        _errorMessage = 'Clave inválida. Debe tener formato KEYF-XXXX-XXXX-XXXX.';
+        _errorMessage = ref.read(licenseProvider.notifier).lastError ?? 'No se pudo activar la clave.';
       } else {
         _keyController.clear();
       }

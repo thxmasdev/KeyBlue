@@ -36,3 +36,6 @@ IMPLEMENTATION_STATUS.md
 # Sistema
 .DS_Store
 Thumbs.db
+
+# Config local de la app (URL + clave publica de Supabase)
+apps/mobile/env.json

@@ -58,7 +58,7 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="p-8 space-y-8 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-8 space-y-8 max-w-7xl mx-auto">
       <div>
         <h1 className="text-2xl font-black text-white tracking-tight">Dashboard General</h1>
         <p className="text-sm text-slate-400 mt-1">
@@ -95,7 +95,7 @@ export default function DashboardPage() {
         </h2>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-slate-300">
+          <table className="min-w-[640px] w-full text-left text-sm text-slate-300">
             <thead className="text-xs uppercase bg-slate-800/40 text-slate-400">
               <tr>
                 <th className="px-4 py-3 rounded-l-lg">Dispositivo</th>

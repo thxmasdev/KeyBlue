@@ -3,6 +3,7 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../features/onboarding/onboarding_screens.dart';
+import '../services/license_api.dart';
 
 enum LicenseType { free, proPermanent, pro30Days, pro90Days, proAnnual }
 
@@ -72,35 +73,42 @@ class LicenseNotifier extends Notifier<LicenseState> {
     return verified;
   }
 
-  /// Valida y activa una clave KEYF-XXXX-XXXX-XXXX
+  /// Ultimo error legible de activacion (para mostrarlo en la pantalla PRO).
+  String? lastError;
+
+  /// Valida la clave contra el servidor (Supabase Edge Function) y guarda un token firmado
+  /// para poder seguir validando offline. Una clave con formato correcto pero inexistente se rechaza.
   Future<bool> activateKey(String inputKey) async {
+    lastError = null;
     final cleanKey = inputKey.trim().toUpperCase();
     if (!_validateFormat(cleanKey)) {
+      lastError = 'Clave inválida. Debe tener formato KEYF-XXXX-XXXX-XXXX.';
+      return false;
+    }
+    if (!LicenseApi.configured) {
+      lastError = 'Esta compilación no tiene configurado el servidor de licencias.';
       return false;
     }
 
-    // Calculamos payload de licencia
-    final now = DateTime.now();
-    DateTime? expires;
-
-    // Detectamos tipo de licencia según prefijo
-    LicenseType type = LicenseType.proPermanent;
-    if (cleanKey.contains('30D')) {
-      type = LicenseType.pro30Days;
-      expires = now.add(const Duration(days: 30));
-    } else if (cleanKey.contains('90D')) {
-      type = LicenseType.pro90Days;
-      expires = now.add(const Duration(days: 90));
-    } else if (cleanKey.contains('1YR') || cleanKey.contains('YEAR')) {
-      type = LicenseType.proAnnual;
-      expires = now.add(const Duration(days: 365));
-    } else {
-      type = LicenseType.proPermanent;
-      expires = null;
+    final prefs = ref.read(prefsProvider);
+    final deviceId = await LicenseApi.deviceId(prefs);
+    final result = await LicenseApi.activate(cleanKey, deviceId);
+    if (!result.ok) {
+      lastError = result.error;
+      return false;
     }
 
+    final now = DateTime.now();
+    final type = switch (result.licenseType) {
+      '30_days' => LicenseType.pro30Days,
+      '90_days' => LicenseType.pro90Days,
+      'annual' => LicenseType.proAnnual,
+      'custom' => LicenseType.pro30Days,
+      _ => LicenseType.proPermanent,
+    };
+    final expires = result.expiresAt;
+
     final token = _generateToken(cleanKey, type, now, expires);
-    final prefs = ref.read(prefsProvider);
     await prefs.setString(_keyPref, cleanKey);
     await prefs.setString(_tokenPref, token);
     await prefs.setInt(_lastSeenPref, now.millisecondsSinceEpoch);
@@ -111,8 +119,8 @@ class LicenseNotifier extends Notifier<LicenseState> {
       key: cleanKey,
       activatedAt: now,
       expiresAt: expires,
+      deviceId: deviceId,
     );
-
     return true;
   }
 

@@ -70,7 +70,7 @@ serve(async (req) => {
       const encoder = new TextEncoder();
       const hashBuffer = await crypto.subtle.digest("SHA-256", encoder.encode(plainKey));
       const keyHash = Array.from(new Uint8Array(hashBuffer))
-        .map((b) => b.toString(16).padLeft(2, "0"))
+        .map((b) => b.toString(16).padStart(2, "0"))
         .join("");
 
       let expiresAt: string | null = null;

@@ -93,9 +93,9 @@ class SettingsScreen extends ConsumerWidget {
         Card(
           child: Column(
             children: [
-              const ListTile(
-                title: Text('KeyBlue para Android'),
-                subtitle: Text('Versión 0.1.0 (Oficial)'),
+              ListTile(
+                title: const Text('KeyBlue para Android'),
+                subtitle: Text('Versión ${ref.watch(installedVersionProvider).value ?? '...'}'),
               ),
               const Divider(height: 1),
               ListTile(
@@ -116,8 +116,8 @@ class SettingsScreen extends ConsumerWidget {
                     UpdateService.showUpdateDialog(context, update);
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('KeyBlue está actualizado a la última versión disponible (v0.1.0).'),
+                      SnackBar(
+                        content: Text('KeyBlue está actualizado (v${update?.currentVersion ?? ref.read(installedVersionProvider).value ?? ''}).'),
                       ),
                     );
                   }

@@ -1,50 +1,27 @@
 ﻿'use client';
 
-import { useState } from 'react';
-import { Users, Smartphone, ShieldCheck, Search } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase';
+import { Users, Search } from 'lucide-react';
 
 export default function UsersPage() {
-  const [users] = useState([
-    {
-      id: 'usr_1',
-      email: 'alex.developer@example.com',
-      role: 'user',
-      is_pro: true,
-      active_devices: 2,
-      created_at: '2026-10-15',
-    },
-    {
-      id: 'usr_2',
-      email: 'maria.designer@example.com',
-      role: 'user',
-      is_pro: true,
-      active_devices: 1,
-      created_at: '2026-10-22',
-    },
-    {
-      id: 'usr_3',
-      email: 'carlos.test@example.com',
-      role: 'user',
-      is_pro: false,
-      active_devices: 0,
-      created_at: '2026-11-01',
-    },
-    {
-      id: 'usr_4',
-      email: 'admin.keyblue@keyblue.app',
-      role: 'superadmin',
-      is_pro: true,
-      active_devices: 1,
-      created_at: '2026-09-01',
-    },
-  ]);
+  const [users, setUsers] = useState<{ id: string; email: string; role: string; created_at: string }[]>([]);
+
+  useEffect(() => {
+    supabase
+      .from('profiles')
+      .select('id,email,role,created_at')
+      .order('created_at', { ascending: false })
+      .limit(500)
+      .then(({ data }) => setUsers(data ?? []));
+  }, []);
 
   const [search, setSearch] = useState('');
 
   const filtered = users.filter((u) => u.email.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <div className="p-8 space-y-8 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-8 space-y-8 max-w-7xl mx-auto">
       <div>
         <h1 className="text-2xl font-black text-white tracking-tight">Gestión de Usuarios</h1>
         <p className="text-sm text-slate-400 mt-1">
@@ -63,14 +40,12 @@ export default function UsersPage() {
         />
       </div>
 
-      <div className="rounded-2xl bg-[#121724] border border-slate-800/80 shadow-lg overflow-hidden">
-        <table className="w-full text-left text-sm text-slate-300">
+      <div className="rounded-2xl bg-[#121724] border border-slate-800/80 shadow-lg overflow-x-auto">
+        <table className="min-w-[640px] w-full text-left text-sm text-slate-300">
           <thead className="text-xs uppercase bg-slate-800/50 text-slate-400">
             <tr>
               <th className="px-6 py-4">Usuario</th>
               <th className="px-6 py-4">Rol</th>
-              <th className="px-6 py-4">Estado PRO</th>
-              <th className="px-6 py-4">Dispositivos Activos</th>
               <th className="px-6 py-4">Fecha Registro</th>
             </tr>
           </thead>
@@ -88,23 +63,7 @@ export default function UsersPage() {
                     {u.role}
                   </span>
                 </td>
-                <td className="px-6 py-4">
-                  <span
-                    className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                      u.is_pro
-                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                        : 'bg-slate-800 text-slate-400'
-                    }`}
-                  >
-                    {u.is_pro && <ShieldCheck className="w-3.5 h-3.5" />}
-                    {u.is_pro ? 'PRO' : 'FREE'}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-slate-300 flex items-center gap-2">
-                  <Smartphone className="w-4 h-4 text-slate-500" />
-                  {u.active_devices} conectado(s)
-                </td>
-                <td className="px-6 py-4 text-slate-400">{u.created_at}</td>
+                <td className="px-6 py-4 text-slate-400">{new Date(u.created_at).toLocaleDateString()}</td>
               </tr>
             ))}
           </tbody>

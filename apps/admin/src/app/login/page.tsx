@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -25,12 +25,6 @@ export default function LoginPage() {
       });
 
       if (signInError) {
-        // En modo de desarrollo si aún no se ha creado un admin en Supabase, permitimos demo admin
-        if (email === 'admin@keyblue.app' && password === 'admin123') {
-          sessionStorage.setItem('keyblue_admin_auth', 'true');
-          router.push('/dashboard');
-          return;
-        }
         throw signInError;
       }
 
@@ -50,7 +44,6 @@ export default function LoginPage() {
         throw new Error('Acceso denegado: Esta cuenta no cuenta con permisos de Administrador.');
       }
 
-      sessionStorage.setItem('keyblue_admin_auth', 'true');
       router.push('/dashboard');
     } catch (err: any) {
       setError(err.message || 'Error al iniciar sesión');

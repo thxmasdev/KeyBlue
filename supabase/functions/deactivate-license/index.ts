@@ -31,7 +31,7 @@ serve(async (req) => {
     const data = encoder.encode(cleanKey);
     const hashBuffer = await crypto.subtle.digest("SHA-256", data);
     const keyHash = Array.from(new Uint8Array(hashBuffer))
-      .map((b) => b.toString(16).padLeft(2, "0"))
+      .map((b) => b.toString(16).padStart(2, "0"))
       .join("");
 
     const { data: license } = await supabaseClient

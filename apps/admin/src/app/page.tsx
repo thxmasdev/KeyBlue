@@ -79,7 +79,32 @@ const CURRENT_APP_VERSION = 'v0.1.0';
 export default function LandingPage() {
   const [activeTheme, setActiveTheme] = useState(themesPreview[0]);
   const [activeMode, setActiveMode] = useState<'qwerty' | 't9'>('qwerty');
-  const [typedText, setTypedText] = useState('¡Escribe aquí para probar KeyBlue en vivo!');
+  const [typedText, setTypedText] = useState('¡Escribe aquí para probar KeyBlue en vivo! ');
+  const [t9Seq, setT9Seq] = useState('');
+  const [t9Idx, setT9Idx] = useState(0);
+  const t9Cands = t9Candidates(t9Seq);
+  const t9Word = t9Cands.length ? t9Cands[t9Idx % t9Cands.length] : '';
+  const t9Commit = (suffix = '') => {
+    if (t9Seq) setTypedText((p) => p + t9Word + suffix);
+    else if (suffix) setTypedText((p) => p + suffix);
+    setT9Seq('');
+    setT9Idx(0);
+  };
+  const t9Press = (k: string) => {
+    if (/^[2-9]$/.test(k)) {
+      setT9Seq((s) => s + k);
+      setT9Idx(0);
+    } else if (k === '*') {
+      if (t9Cands.length) setT9Idx((i) => (i + 1) % t9Cands.length);
+    } else if (k === '0' || k === 'space' || k === 'enter') t9Commit(' ');
+    else if (k === '1') t9Commit('.');
+    else if (k === 'back') {
+      if (t9Seq) {
+        setT9Seq((s) => s.slice(0, -1));
+        setT9Idx(0);
+      } else setTypedText((p) => p.slice(0, -1));
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#07090E] text-slate-100 selection:bg-primary selection:text-white relative overflow-hidden">

@@ -32,7 +32,7 @@ serve(async (req) => {
     const data = encoder.encode(cleanKey);
     const hashBuffer = await crypto.subtle.digest("SHA-256", data);
     const hashArray = Array.from(new Uint8Array(hashBuffer));
-    const keyHash = hashArray.map((b) => b.toString(16).padLeft(2, "0")).join("");
+    const keyHash = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 
     // Buscamos la licencia por su hash seguro
     const { data: license, error: licError } = await supabaseClient

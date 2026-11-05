@@ -1,49 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { KeyRound, Plus, Copy, Check, ShieldAlert, Search, Filter } from 'lucide-react';
-import { License } from '@/lib/supabase';
-
-// Generador de clave segura en frontend para pruebas administrativas inmediatas
-function generateSecureKey(): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  const block = () => Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-  return `KEYF-${block()}-${block()}-${block()}`;
-}
+import { License, supabase } from '@/lib/supabase';
 
 export default function LicensesPage() {
-  const [licenses, setLicenses] = useState<License[]>([
-    {
-      id: '1',
-      key_prefix: 'KEYF-A9F2',
-      license_type: 'permanent',
-      status: 'active',
-      expires_at: null,
-      max_devices: 1,
-      created_at: '2026-11-01T12:00:00Z',
-      revoked_at: null,
-    },
-    {
-      id: '2',
-      key_prefix: 'KEYF-7K4M',
-      license_type: 'annual',
-      status: 'available',
-      expires_at: '2027-11-03T12:00:00Z',
-      max_devices: 2,
-      created_at: '2026-11-02T15:30:00Z',
-      revoked_at: null,
-    },
-    {
-      id: '3',
-      key_prefix: 'KEYF-3N8P',
-      license_type: '30_days',
-      status: 'active',
-      expires_at: '2026-12-03T12:00:00Z',
-      max_devices: 1,
-      created_at: '2026-11-03T09:00:00Z',
-      revoked_at: null,
-    },
-  ]);
+  const [licenses, setLicenses] = useState<License[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
 
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [search, setSearch] = useState<string>('');
@@ -55,33 +19,31 @@ export default function LicensesPage() {
   const [newType, setNewType] = useState<string>('permanent');
   const [newMaxDevices, setNewMaxDevices] = useState<number>(1);
 
-  const handleGenerate = () => {
-    const key = generateSecureKey();
-    const prefix = key.substring(0, 9); // ej: KEYF-A9F2
-    const now = new Date();
-    let expires: string | null = null;
+  useEffect(() => {
+    supabase
+      .from('licenses')
+      .select('id,key_prefix,license_type,status,expires_at,max_devices,created_at,revoked_at')
+      .order('created_at', { ascending: false })
+      .then(({ data, error }) => {
+        if (error) alert('No se pudieron cargar las licencias: ' + error.message);
+        setLicenses((data as License[]) ?? []);
+        setLoading(false);
+      });
+  }, []);
 
-    if (newType === '30_days') {
-      expires = new Date(now.getTime() + 30 * 86400000).toISOString();
-    } else if (newType === '90_days') {
-      expires = new Date(now.getTime() + 90 * 86400000).toISOString();
-    } else if (newType === 'annual') {
-      expires = new Date(now.getTime() + 365 * 86400000).toISOString();
+  // La clave se genera y se hashea en la Edge Function; el texto plano solo se muestra una vez.
+  const handleGenerate = async () => {
+    setBusy(true);
+    const { data, error } = await supabase.functions.invoke('admin-license-management', {
+      body: { action: 'generate_key', payload: { license_type: newType, max_devices: newMaxDevices } },
+    });
+    setBusy(false);
+    if (error || !data?.key) {
+      alert('No se pudo generar la clave: ' + (error?.message ?? data?.error ?? 'error desconocido'));
+      return;
     }
-
-    const newLic: License = {
-      id: `lic_${Date.now()}`,
-      key_prefix: prefix,
-      license_type: newType as any,
-      status: 'available',
-      expires_at: expires,
-      max_devices: newMaxDevices,
-      created_at: now.toISOString(),
-      revoked_at: null,
-    };
-
-    setLicenses([newLic, ...licenses]);
-    setGeneratedKey(key);
+    setLicenses((prev) => [data.license as License, ...prev]);
+    setGeneratedKey(data.key as string);
     setCopied(false);
   };
 
@@ -91,14 +53,16 @@ export default function LicensesPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleRevoke = (id: string) => {
-    if (confirm('¿Estás seguro de revocar esta clave? Los dispositivos perderán acceso PRO.')) {
-      setLicenses(
-        licenses.map((l) =>
-          l.id === id ? { ...l, status: 'revoked', revoked_at: new Date().toISOString() } : l
-        )
-      );
+  const handleRevoke = async (id: string) => {
+    if (!confirm('¿Estás seguro de revocar esta clave? Los dispositivos perderán acceso PRO.')) return;
+    const { data, error } = await supabase.functions.invoke('admin-license-management', {
+      body: { action: 'revoke_key', payload: { license_id: id, reason: 'Revocada desde el panel' } },
+    });
+    if (error || !data?.success) {
+      alert('No se pudo revocar: ' + (error?.message ?? data?.error ?? 'error desconocido'));
+      return;
     }
+    setLicenses((prev) => prev.map((l) => (l.id === id ? { ...l, status: 'revoked', revoked_at: new Date().toISOString() } : l)));
   };
 
   const filtered = licenses.filter((l) => {
@@ -108,7 +72,7 @@ export default function LicensesPage() {
   });
 
   return (
-    <div className="p-8 space-y-8 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-8 space-y-8 max-w-7xl mx-auto">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-black text-white tracking-tight">Gestión de Licencias (KEYS)</h1>
@@ -154,8 +118,8 @@ export default function LicensesPage() {
       </div>
 
       {/* Tabla de Licencias */}
-      <div className="rounded-2xl bg-[#121724] border border-slate-800/80 shadow-lg overflow-hidden">
-        <table className="w-full text-left text-sm text-slate-300">
+      <div className="rounded-2xl bg-[#121724] border border-slate-800/80 shadow-lg overflow-x-auto">
+        <table className="min-w-[640px] w-full text-left text-sm text-slate-300">
           <thead className="text-xs uppercase bg-slate-800/50 text-slate-400">
             <tr>
               <th className="px-6 py-4">Prefijo KEY</th>

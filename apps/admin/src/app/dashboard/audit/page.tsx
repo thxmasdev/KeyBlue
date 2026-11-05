@@ -1,47 +1,31 @@
 ﻿'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ShieldAlert, Search } from 'lucide-react';
-import { AuditLog } from '@/lib/supabase';
+import { AuditLog, supabase } from '@/lib/supabase';
 
 export default function AuditPage() {
-  const [logs] = useState<AuditLog[]>([
-    {
-      id: '1',
-      admin_id: 'admin.keyblue@keyblue.app',
-      action: 'GENERATE_KEY',
-      target_id: 'lic_8829',
-      metadata: { license_type: 'permanent', max_devices: 1, key_prefix: 'KEYF-A9F2' },
-      created_at: '2026-11-03 11:15:30 UTC',
-    },
-    {
-      id: '2',
-      admin_id: 'admin.keyblue@keyblue.app',
-      action: 'REVOKE_KEY',
-      target_id: 'lic_7714',
-      metadata: { reason: 'Uso no autorizado detectado' },
-      created_at: '2026-11-03 09:40:12 UTC',
-    },
-    {
-      id: '3',
-      admin_id: 'admin.keyblue@keyblue.app',
-      action: 'THEME_UPDATE',
-      target_id: 'gaming_rgb',
-      metadata: { is_premium: true, published: true },
-      created_at: '2026-11-02 18:20:00 UTC',
-    },
-  ]);
+  const [logs, setLogs] = useState<AuditLog[]>([]);
+
+  useEffect(() => {
+    supabase
+      .from('admin_audit_logs')
+      .select('id,admin_id,action,target_id,metadata,created_at')
+      .order('created_at', { ascending: false })
+      .limit(200)
+      .then(({ data }) => setLogs((data as AuditLog[]) ?? []));
+  }, []);
 
   const [search, setSearch] = useState('');
 
   const filtered = logs.filter(
     (l) =>
       l.action.toLowerCase().includes(search.toLowerCase()) ||
-      l.admin_id.toLowerCase().includes(search.toLowerCase())
+      (l.admin_id ?? '').toLowerCase().includes(search.toLowerCase())
   );
 
   return (
-    <div className="p-8 space-y-8 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-8 space-y-8 max-w-7xl mx-auto">
       <div>
         <h1 className="text-2xl font-black text-white tracking-tight">Registro de Auditoría</h1>
         <p className="text-sm text-slate-400 mt-1">
@@ -60,8 +44,8 @@ export default function AuditPage() {
         />
       </div>
 
-      <div className="rounded-2xl bg-[#121724] border border-slate-800/80 shadow-lg overflow-hidden">
-        <table className="w-full text-left text-sm text-slate-300">
+      <div className="rounded-2xl bg-[#121724] border border-slate-800/80 shadow-lg overflow-x-auto">
+        <table className="min-w-[640px] w-full text-left text-sm text-slate-300">
           <thead className="text-xs uppercase bg-slate-800/50 text-slate-400">
             <tr>
               <th className="px-6 py-4">Fecha / Hora</th>
