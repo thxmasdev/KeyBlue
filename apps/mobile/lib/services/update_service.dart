@@ -29,7 +29,7 @@ class AppUpdateInfo {
 class UpdateService {
   static const repoOwner = 'thxmasdev';
   static const repoName = 'KeyBlue';
-  static const fallbackVersion = '0.1.2';
+  static const fallbackVersion = '0.1.3';
   static const prefKeyDismissed = 'keyblue_dismissed_update_version';
 
   /// Versión instalada, leída del paquete real (pubspec / versionName).

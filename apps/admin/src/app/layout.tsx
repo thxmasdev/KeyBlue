@@ -1,10 +1,14 @@
-﻿import type { Metadata } from 'next';
+import type { Metadata } from 'next';
 import './globals.css';
 import { Sidebar } from '@/components/Sidebar';
 
 export const metadata: Metadata = {
-  title: 'KeyBlue Admin - Panel de Control',
-  description: 'Gestión privada de licencias, temas y usuarios de KeyBlue',
+  title: 'KeyBlue - Teclado Android Inteligente',
+  description: 'Teclado nativo Android de alto rendimiento con motor T9 y distribuciones completas.',
+  icons: {
+    icon: '/favicon.png',
+    apple: '/keyblue_logo.png',
+  },
 };
 
 export default function RootLayout({

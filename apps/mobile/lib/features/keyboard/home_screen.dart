@@ -28,7 +28,17 @@ class HomeScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('KeyBlue', style: TextStyle(fontWeight: FontWeight.w800)),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.asset('assets/icons/keyblue_logo.png', width: 28, height: 28),
+            ),
+            const SizedBox(width: 10),
+            const Text('KeyBlue', style: TextStyle(fontWeight: FontWeight.w800)),
+          ],
+        ),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 12),

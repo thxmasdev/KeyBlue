@@ -74,7 +74,7 @@ const themesPreview = [
 
 const GITHUB_REPO_URL = 'https://github.com/thxmasdev/KeyBlue';
 const GITHUB_LATEST_RELEASE_URL = 'https://github.com/thxmasdev/KeyBlue/releases/latest';
-const CURRENT_APP_VERSION = 'v0.1.2';
+const CURRENT_APP_VERSION = 'v0.1.3';
 
 // Simulación de diccionario T9 interactivo para la landing web
 const T9_LETTERS: Record<string, string> = {
@@ -165,9 +165,7 @@ export default function LandingPage() {
       <header className="sticky top-0 z-40 backdrop-blur-xl bg-[#07090E]/80 border-b border-slate-800/80">
         <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-primary to-cyan-400 flex items-center justify-center font-black text-white text-xl shadow-lg shadow-primary/30">
-              K
-            </div>
+            <img src="/keyblue_logo.png" alt="KeyBlue Logo" className="w-10 h-10 rounded-2xl object-cover shadow-lg shadow-primary/30 border border-slate-700/60" />
             <div>
               <span className="font-black text-xl tracking-tight text-white">KeyBlue</span>
               <span className="text-[10px] font-bold uppercase tracking-widest text-cyan-400 ml-2 px-2 py-0.5 rounded-full bg-cyan-400/10 border border-cyan-400/20">
@@ -606,9 +604,7 @@ export default function LandingPage() {
       <footer className="py-12 px-6 border-t border-slate-900 bg-[#05070B] text-slate-500 text-xs">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-xl bg-primary flex items-center justify-center font-bold text-white text-xs">
-              K
-            </div>
+            <img src="/keyblue_logo.png" alt="KeyBlue Logo" className="w-7 h-7 rounded-xl object-cover" />
             <span className="font-bold text-white text-sm">KeyBlue Android IME</span>
           </div>
 

@@ -92,7 +92,7 @@ void main() {
       final update = await UpdateService.checkUpdate();
       expect(update, isNotNull);
       expect(update!.latestVersion, isNotEmpty);
-      expect(update.currentVersion, equals('0.1.2'));
+      expect(update.currentVersion, equals('0.1.3'));
       expect(update.downloadUrl, contains('.apk'));
     });
 
